@@ -1,5 +1,4 @@
-import { toast } from "sonner";
-
+const TMDB_API_KEY = "c1dc975936a5b8fe2d8c5ca0a44aadad";
 const TMDB_BASE_URL = "https://api.themoviedb.org/3";
 
 interface TMDBSearchResult {
@@ -18,13 +17,22 @@ interface TMDBResponse {
   total_results: number;
 }
 
+const cache = new Map();
+const CACHE_DURATION = 1000 * 60 * 5; // 5 minutes
+
 export const searchTMDB = async (query: string): Promise<TMDBSearchResult[]> => {
+  const cacheKey = `search:${query}`;
+  const cached = cache.get(cacheKey);
+  
+  if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+    return cached.data;
+  }
+
   try {
     const response = await fetch(
-      `${TMDB_BASE_URL}/search/multi?query=${encodeURIComponent(query)}`,
+      `${TMDB_BASE_URL}/search/multi?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(query)}`,
       {
         headers: {
-          Authorization: `Bearer ${import.meta.env.VITE_TMDB_API_KEY}`,
           "Content-Type": "application/json",
         },
       }
@@ -35,25 +43,31 @@ export const searchTMDB = async (query: string): Promise<TMDBSearchResult[]> => 
     }
 
     const data: TMDBResponse = await response.json();
-    return data.results.filter(
+    const results = data.results.filter(
       (item) => item.media_type === "movie" || item.media_type === "tv"
     );
+
+    cache.set(cacheKey, { data: results, timestamp: Date.now() });
+    return results;
   } catch (error) {
-    toast.error("Error searching TMDB");
+    console.error("Error searching TMDB:", error);
     return [];
   }
 };
 
-export const getMediaDetails = async (
-  mediaId: number,
-  mediaType: "movie" | "tv"
-) => {
+export const getMediaDetails = async (mediaId: number, mediaType: "movie" | "tv") => {
+  const cacheKey = `details:${mediaType}:${mediaId}`;
+  const cached = cache.get(cacheKey);
+  
+  if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+    return cached.data;
+  }
+
   try {
     const response = await fetch(
-      `${TMDB_BASE_URL}/${mediaType}/${mediaId}`,
+      `${TMDB_BASE_URL}/${mediaType}/${mediaId}?api_key=${TMDB_API_KEY}`,
       {
         headers: {
-          Authorization: `Bearer ${import.meta.env.VITE_TMDB_API_KEY}`,
           "Content-Type": "application/json",
         },
       }
@@ -63,9 +77,11 @@ export const getMediaDetails = async (
       throw new Error(`Failed to fetch ${mediaType} details`);
     }
 
-    return await response.json();
+    const data = await response.json();
+    cache.set(cacheKey, { data, timestamp: Date.now() });
+    return data;
   } catch (error) {
-    toast.error(`Error fetching ${mediaType} details`);
+    console.error(`Error fetching ${mediaType} details:`, error);
     return null;
   }
 };
