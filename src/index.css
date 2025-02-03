@@ -39,7 +39,7 @@
 
 @layer utilities {
   .gradient-primary {
-    @apply bg-gradient-to-r from-[#FF7F6F] to-[#FF719A];
+    @apply bg-gradient-to-r from-[#FF7F6F] to-[#FF719A] hover:opacity-90 transition-opacity;
   }
   
   .gradient-card {
@@ -48,6 +48,10 @@
   
   .glass-effect {
     @apply bg-white/10 backdrop-blur-md border border-white/20;
+  }
+  
+  .gradient-text {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-[#FF7F6F] to-[#FF719A];
   }
   
   .animate-slide-up {

@@ -27,3 +27,21 @@ export const hashPassword = async (password: string) => {
 export const comparePasswords = async (password: string, hashedPassword: string) => {
   return bcrypt.compare(password, hashedPassword);
 };
+
+// Create admin user if it doesn't exist
+export const ensureAdminExists = async () => {
+  try {
+    const adminUser = await User.findOne({ email: 'admin' });
+    if (!adminUser) {
+      const hashedPassword = await hashPassword('admin');
+      await User.create({
+        email: 'admin',
+        password: hashedPassword,
+        name: 'Administrator',
+        role: 'admin'
+      });
+    }
+  } catch (error) {
+    console.error('Error ensuring admin exists:', error);
+  }
+};
