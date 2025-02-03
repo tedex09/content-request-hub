@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, LogIn, User } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import { useQuery } from "@tanstack/react-query";
+import { Toaster } from "@/components/ui/sonner";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -34,19 +34,19 @@ const Login = () => {
         localStorage.setItem("user", JSON.stringify(data.user));
         
         toast({
-          title: "Login successful",
-          description: "Welcome back!",
+          title: "Login realizado com sucesso!",
+          description: "Redirecionando para o dashboard...",
         });
         
-        navigate("/dashboard");
+        setTimeout(() => navigate("/dashboard"), 1500);
       } else {
-        throw new Error(data.message || "Failed to login");
+        throw new Error(data.message || "Falha ao realizar login");
       }
     } catch (error) {
       toast({
         variant: "destructive",
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to login",
+        title: "Erro",
+        description: error instanceof Error ? error.message : "Falha ao realizar login",
       });
     } finally {
       setIsLoading(false);
@@ -62,16 +62,16 @@ const Login = () => {
           onClick={() => navigate("/")}
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back
+          Voltar
         </Button>
 
         <Card className="w-full p-6 glass-effect">
           <div className="flex flex-col items-center mb-8">
-            <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center mb-4">
+            <div className="w-12 h-12 rounded-full spotify-gradient flex items-center justify-center mb-4">
               <User className="h-6 w-6 text-primary-foreground" />
             </div>
-            <h2 className="text-2xl font-bold text-foreground">Welcome Back</h2>
-            <p className="text-muted-foreground">Login to your account</p>
+            <h2 className="text-2xl font-bold text-foreground">Bem-vindo de volta</h2>
+            <p className="text-muted-foreground">Faça login na sua conta</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -82,7 +82,7 @@ const Login = () => {
               <Input
                 id="email"
                 type="email"
-                placeholder="Enter your email"
+                placeholder="Digite seu email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="bg-secondary border-secondary hover:border-primary focus:border-primary transition-colors"
@@ -92,12 +92,12 @@ const Login = () => {
 
             <div className="space-y-2">
               <label htmlFor="password" className="text-sm font-medium text-foreground">
-                Password
+                Senha
               </label>
               <Input
                 id="password"
                 type="password"
-                placeholder="Enter your password"
+                placeholder="Digite sua senha"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="bg-secondary border-secondary hover:border-primary focus:border-primary transition-colors"
@@ -111,28 +111,29 @@ const Login = () => {
               disabled={isLoading}
             >
               {isLoading ? (
-                "Logging in..."
+                "Entrando..."
               ) : (
                 <>
-                  Login
+                  Entrar
                   <LogIn className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </>
               )}
             </Button>
 
             <p className="text-center text-sm text-muted-foreground">
-              Don't have an account?{" "}
+              Não tem uma conta?{" "}
               <button
                 type="button"
                 onClick={() => navigate("/register")}
                 className="text-primary hover:underline focus:outline-none"
               >
-                Register
+                Registrar
               </button>
             </p>
           </form>
         </Card>
       </div>
+      <Toaster />
     </div>
   );
 };

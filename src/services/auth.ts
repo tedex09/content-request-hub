@@ -3,11 +3,16 @@ import bcrypt from 'bcryptjs';
 import type { User } from '@/types/models';
 import UserModel from '@/models/User';
 
-const JWT_SECRET = "KI7gqqc@";
+const JWT_SECRET = process.env.JWT_SECRET || "KI7gqqc@";
 
 export const generateToken = (user: User) => {
   return jwt.sign(
-    { id: user._id, email: user.email, role: user.role },
+    { 
+      id: user._id, 
+      email: user.email, 
+      role: user.role,
+      name: user.name 
+    },
     JWT_SECRET,
     { expiresIn: '7d' }
   );
@@ -29,21 +34,36 @@ export const comparePasswords = async (password: string, hashedPassword: string)
   return bcrypt.compare(password, hashedPassword);
 };
 
-// Create admin user if it doesn't exist
 export const ensureAdminExists = async () => {
   try {
-    const adminUser = await UserModel.findOne({ email: 'admin' });
-    if (!adminUser) {
+    const adminExists = await UserModel.findOne({ role: 'admin' });
+    if (!adminExists) {
       const hashedPassword = await hashPassword('admin');
       await UserModel.create({
-        email: 'admin',
+        email: 'admin@admin.com',
         password: hashedPassword,
         name: 'Administrator',
-        role: 'admin'
+        role: 'admin',
+        whatsapp: ''
       });
       console.log('Admin user created successfully');
     }
   } catch (error) {
     console.error('Error ensuring admin exists:', error);
   }
+};
+
+export const authenticateUser = async (email: string, password: string) => {
+  const user = await UserModel.findOne({ email });
+  if (!user) {
+    throw new Error('Usuário não encontrado');
+  }
+
+  const isValid = await comparePasswords(password, user.password);
+  if (!isValid) {
+    throw new Error('Senha incorreta');
+  }
+
+  const token = generateToken(user);
+  return { token, user };
 };
