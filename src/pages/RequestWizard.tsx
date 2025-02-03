@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import MediaSearch from "@/components/MediaSearch";
-import { ArrowLeft, ArrowRight, Send } from "lucide-react";
+import { ArrowLeft, ArrowRight, Send, Film, Tv } from "lucide-react";
 
 const requestTypes = [
   { id: "add", label: "✨ Adicionar novo filme/série" },

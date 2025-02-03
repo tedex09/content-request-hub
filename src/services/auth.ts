@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import type { User } from '@/types/models';
+import UserModel from '@/models/User';
 
 const JWT_SECRET = "KI7gqqc@";
 
@@ -31,10 +32,10 @@ export const comparePasswords = async (password: string, hashedPassword: string)
 // Create admin user if it doesn't exist
 export const ensureAdminExists = async () => {
   try {
-    const adminUser = await User.findOne({ email: 'admin' });
+    const adminUser = await UserModel.findOne({ email: 'admin' });
     if (!adminUser) {
       const hashedPassword = await hashPassword('admin');
-      await User.create({
+      await UserModel.create({
         email: 'admin',
         password: hashedPassword,
         name: 'Administrator',
