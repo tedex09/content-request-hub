@@ -41,6 +41,7 @@ export const ensureAdminExists = async () => {
         name: 'Administrator',
         role: 'admin'
       });
+      console.log('Admin user created successfully');
     }
   } catch (error) {
     console.error('Error ensuring admin exists:', error);
