@@ -25,7 +25,7 @@ dbConnect().then(() => {
 }).catch(console.error);
 
 // Auth routes
-app.post('/api/auth/login', async (req, res) => {
+app.post('/api/auth/login', async (req: express.Request, res: express.Response) => {
   try {
     const { email, password } = req.body;
     

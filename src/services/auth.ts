@@ -68,7 +68,7 @@ export const authenticateUser = async (email: string, password: string) => {
     return { 
       token, 
       user: {
-        id: user._id,
+        id: user._id.toString(),
         email: user.email,
         name: user.name,
         role: user.role,
