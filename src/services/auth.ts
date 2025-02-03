@@ -1,11 +1,10 @@
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
-import type { User } from '@/types/models';
 import UserModel from '@/models/User';
 
 const JWT_SECRET = process.env.JWT_SECRET || "KI7gqqc@";
 
-export const generateToken = (user: User) => {
+export const generateToken = (user: any) => {
   return jwt.sign(
     { 
       id: user._id, 
@@ -54,16 +53,30 @@ export const ensureAdminExists = async () => {
 };
 
 export const authenticateUser = async (email: string, password: string) => {
-  const user = await UserModel.findOne({ email });
-  if (!user) {
-    throw new Error('Usuário não encontrado');
-  }
+  try {
+    const user = await UserModel.findOne({ email });
+    if (!user) {
+      throw new Error('Usuário não encontrado');
+    }
 
-  const isValid = await comparePasswords(password, user.password);
-  if (!isValid) {
-    throw new Error('Senha incorreta');
-  }
+    const isValid = await comparePasswords(password, user.password);
+    if (!isValid) {
+      throw new Error('Senha incorreta');
+    }
 
-  const token = generateToken(user);
-  return { token, user };
+    const token = generateToken(user);
+    return { 
+      token, 
+      user: {
+        id: user._id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        whatsapp: user.whatsapp
+      }
+    };
+  } catch (error) {
+    console.error('Authentication error:', error);
+    throw error;
+  }
 };

@@ -14,6 +14,7 @@ const io = new Server(httpServer, {
   }
 });
 
+// Middleware
 app.use(cors());
 app.use(express.json());
 
@@ -23,6 +24,27 @@ dbConnect().then(() => {
   ensureAdminExists();
 }).catch(console.error);
 
+// Auth routes
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email and password are required' });
+    }
+
+    const { authenticateUser } = require('./services/auth');
+    const result = await authenticateUser(email, password);
+    
+    res.status(200).json(result);
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(401).json({ 
+      message: error instanceof Error ? error.message : 'Authentication failed' 
+    });
+  }
+});
+
 // Socket.IO connection handling
 io.on('connection', (socket) => {
   console.log('Client connected');
@@ -30,6 +52,12 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     console.log('Client disconnected');
   });
+});
+
+// Error handling middleware
+app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error(err.stack);
+  res.status(500).json({ message: 'Something broke!' });
 });
 
 // Start server
