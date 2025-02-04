@@ -1,30 +1,38 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import MediaSearch from "@/components/MediaSearch";
-import { ArrowLeft, ArrowRight, Send, Film, Tv } from "lucide-react";
+import { ArrowLeft, ArrowRight, Send, Film, Tv, Plus, Edit, RotateCw } from "lucide-react";
+
+const mediaTypes = [
+  { id: "movie", label: "Filme", icon: Film },
+  { id: "tv", label: "Série", icon: Tv },
+] as const;
 
 const requestTypes = [
-  { id: "add", label: "✨ Adicionar novo filme/série" },
-  { id: "update", label: "🔄 Atualizar série" },
-  { id: "fix", label: "🛠️ Corrigir filme ou série" },
-] as const;
+  { id: "add", label: "Adicionar", icon: Plus },
+  { id: "fix", label: "Corrigir", icon: Edit },
+  { id: "update", label: "Atualizar", icon: RotateCw, onlyForTv: true },
+];
 
 const RequestWizard = () => {
   const [step, setStep] = useState(1);
+  const [mediaType, setMediaType] = useState<"movie" | "tv" | "">("");
   const [requestType, setRequestType] = useState<string>("");
   const [selectedMedia, setSelectedMedia] = useState<any>(null);
   const [description, setDescription] = useState("");
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const handleRequestTypeSelect = (value: string) => {
-    setRequestType(value);
+  const handleMediaTypeSelect = (type: "movie" | "tv") => {
+    setMediaType(type);
     setStep(2);
+  };
+
+  const handleRequestTypeSelect = (type: string) => {
+    setRequestType(type);
+    setStep(3);
   };
 
   const handleMediaSelect = (media: any) => {
@@ -98,44 +106,41 @@ const RequestWizard = () => {
         {step === 1 && (
           <div className="space-y-4">
             <h2 className="text-xl font-semibold">
-              Que tipo de solicitação você deseja fazer? 🤔
+              Que tipo de conteúdo você está procurando? 🎬
             </h2>
-            <RadioGroup
-              onValueChange={handleRequestTypeSelect}
-              className="space-y-4"
-            >
-              {requestTypes.map((type) => (
-                <div
-                  key={type.id}
-                  className="flex items-center space-x-3 rounded-lg border p-4 transition-colors hover:bg-muted/50"
+            <div className="grid grid-cols-2 gap-4">
+              {mediaTypes.map(({ id, label, icon: Icon }) => (
+                <button
+                  key={id}
+                  onClick={() => handleMediaTypeSelect(id as "movie" | "tv")}
+                  className="flex flex-col items-center justify-center p-6 rounded-lg border border-border hover:bg-muted/50 transition-colors"
                 >
-                  <RadioGroupItem value={type.id} id={type.id} />
-                  <Label htmlFor={type.id} className="flex-1 cursor-pointer">
-                    {type.label}
-                  </Label>
-                </div>
+                  <Icon className="w-12 h-12 mb-2" />
+                  <span className="text-lg font-medium">{label}</span>
+                </button>
               ))}
-            </RadioGroup>
+            </div>
           </div>
         )}
 
         {step === 2 && (
           <div className="space-y-4">
             <h2 className="text-xl font-semibold">
-              {requestType === "add"
-                ? "Qual conteúdo você quer adicionar? 🎬"
-                : "Qual conteúdo precisa de atenção? 🔍"}
+              O que você deseja fazer? 🤔
             </h2>
-            <div className="space-y-4">
-              <MediaSearch
-                type="movie"
-                onSelect={handleMediaSelect}
-              />
-              <div className="text-center text-muted-foreground">- ou -</div>
-              <MediaSearch
-                type="tv"
-                onSelect={handleMediaSelect}
-              />
+            <div className="grid grid-cols-2 gap-4">
+              {requestTypes
+                .filter(type => !type.onlyForTv || mediaType === "tv")
+                .map(({ id, label, icon: Icon }) => (
+                  <button
+                    key={id}
+                    onClick={() => handleRequestTypeSelect(id)}
+                    className="flex flex-col items-center justify-center p-6 rounded-lg border border-border hover:bg-muted/50 transition-colors"
+                  >
+                    <Icon className="w-12 h-12 mb-2" />
+                    <span className="text-lg font-medium">{label}</span>
+                  </button>
+                ))}
             </div>
           </div>
         )}
@@ -143,21 +148,13 @@ const RequestWizard = () => {
         {step === 3 && (
           <div className="space-y-4">
             <h2 className="text-xl font-semibold">
-              Descreva o que precisa ser feito 📝
+              Buscar {mediaType === "movie" ? "filme" : "série"} 🔍
             </h2>
-            <Textarea
-              placeholder="Descreva detalhadamente o que precisa ser atualizado ou corrigido..."
-              className="h-32"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
+            <MediaSearch
+              type={mediaType}
+              onSelect={handleMediaSelect}
+              language="pt-BR"
             />
-            <Button
-              className="w-full gradient-primary"
-              onClick={() => setStep(4)}
-            >
-              Próximo
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
           </div>
         )}
 
